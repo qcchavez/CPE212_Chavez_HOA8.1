@@ -1,0 +1,32 @@
+- name: Installing required packages for Nagios
+  dnf:
+    name:
+      - nagios
+      - nagios-plugins-all
+      - httpd
+      - php
+      - php-pear
+      - php-mbstring
+      - openssl-devel
+    state: present
+
+- name: Enable Nagios service
+  systemd:
+    name: nagios
+    enabled: yes
+    state: started
+
+- name: Configure Nagios
+  template:
+    src: nagios.cfg.j2
+    dest: /etc/nagios/nagios.cfg
+  notify: Restart Nagios
+
+- name: Allow Apache to start Nagios
+  command: /bin/systemctl enable httpd.service
+  ignore_errors: yes
+
+- name: Restart Nagios
+  systemd:
+    name: nagios
+    state: restarted
