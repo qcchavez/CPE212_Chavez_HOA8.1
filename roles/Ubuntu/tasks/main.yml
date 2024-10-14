@@ -1,35 +1,25 @@
-  - name: Install required packages
-    apt:
-      name:
-        - nagios
-        - nagios-nrpe-plugin
-        - apache2
-        - php
-        - libapache2-mod-php
-        - php-gd
-        - php-pear
-        - php-mbstring
-        - libssl-dev
-    state: present
+---
 
-  - name: Enable Nagios service
-    systemd:
-      - name: nagios
-      - enabled: yes
-      - state: started
+- name: Install required packages
+  apt:
+    name: nagios4-core
+    state: latest
+  when: ansible_distribution == "Ubuntu"
 
-  - name: Configure service
-    template:
-      src: nagios.cfg.j2
-      dest: /etc/nagios/nagios.cfg
-    notify: Restart Nagios
+- name: Enable Nagios service
+  service:
+    name: nagios4
+    state: restarted
+    enabled: true
+  when: ansible_distribution == "Ubuntu"
 
-  - name: Allow Apache to start Nagios
-    apache2_site:
-      name: nagios
-      state: enabled
-
-  - name: Restart Nagios
-    systemd:
-      name: nagios
-      state: restarted
+- name: Install Nagios Dependencies
+  apt:
+    name:
+      - libgd-dev
+      - libpng-dev
+      - libfreetype6-dev
+      - gcc
+      - libc6-dev
+    state: latest
+  when: ansible_distribution == "Ubuntu"
